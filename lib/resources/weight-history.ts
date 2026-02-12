@@ -15,7 +15,6 @@ export class TrainoraWeightHistoryTable extends Construct {
     const { stage } = props;
 
     this.table = new dynamodb.Table(this, 'TrainoraWeightHistory', {
-      tableName: `TrainoraWeightHistory-${stage}`,
       partitionKey: {
         name: 'userId',
         type: dynamodb.AttributeType.STRING,

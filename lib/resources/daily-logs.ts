@@ -15,7 +15,6 @@ export class TrainoraDailyLogsTable extends Construct {
     const { stage } = props;
 
     this.table = new dynamodb.Table(this, 'TrainoraDailyLogsV2', {
-      tableName: `TrainoraDailyLogsV2-${stage}`,
 
       // PK: userId
       partitionKey: {

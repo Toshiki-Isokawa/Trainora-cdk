@@ -16,7 +16,6 @@ export class TrainoraUsersTable extends Construct {
     const { stage } = props;
 
     this.table = new dynamodb.Table(this, "TrainoraUsersTable", {
-      tableName: `TrainoraUsers-${stage}`,
       partitionKey: {
         name: "userId",
         type: dynamodb.AttributeType.STRING,

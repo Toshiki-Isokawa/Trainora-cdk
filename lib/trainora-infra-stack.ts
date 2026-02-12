@@ -34,7 +34,7 @@ export class TrainoraInfraStack extends cdk.Stack {
     // ============================
     // DynamoDB
     // ============================
-    const stage = "dev"; // or from context
+    const stage = this.node.tryGetContext("stage") ?? "dev";
 
     const usersTable = new TrainoraUsersTable(this, "UsersTable", { stage });
     const weightHistoryTable = new TrainoraWeightHistoryTable(this, "WeightHistoryTable", { stage });
@@ -238,6 +238,17 @@ export class TrainoraInfraStack extends cdk.Stack {
     dailyLogsTable.table.grantReadWriteData(updateWorkoutLambda);
     dailyLogsTable.table.grantReadWriteData(deleteWorkoutLambda);
 
+    const uploadUrlLambda = new lambda.Function(this, "UploadUrlLambda", {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: "image/create-upload-url.handler",
+      code: lambda.Code.fromAsset(path.join(__dirname, "../lambda")),
+      environment: {
+        ASSETS_BUCKET: assetsBucket.bucketName,
+      },
+    });
+
+    assetsBucket.grantPut(uploadUrlLambda);
+
 
     // ============================
     // API Gateway
@@ -309,12 +320,18 @@ export class TrainoraInfraStack extends cdk.Stack {
       new apigw.LambdaIntegration(getWorkoutByMonthLambda)
     );
 
+    const upload = api.root.addResource("upload-url");
+    upload.addMethod("POST", new apigw.LambdaIntegration(uploadUrlLambda));
+
+    new cdk.CfnOutput(this, 'ApiBaseUrl', {
+      value: api.url,
+      description: 'Base URL for Trainora API',
+    });
 
     // ============================
     // Cognito: User Pool + App Client (Hosted UI)
     // ============================
     const userPool = new cognito.UserPool(this, 'TrainoraUserPool', {
-      userPoolName: 'trainora-user-pool',
       selfSignUpEnabled: true,
       signInAliases: {
         email: true,
@@ -334,6 +351,15 @@ export class TrainoraInfraStack extends cdk.Stack {
     });
 
     // App client (no secret, for frontend)
+    const callbackUrls =
+      stage === "prod"
+        ? ["https://YOUR_PROD_DOMAIN/api/auth/callback/cognito"]
+        : ["http://localhost:3000/api/auth/callback/cognito"];
+    const logoutUrls =
+      stage === "prod"
+        ? ["https://YOUR_PROD_DOMAIN"]
+        : ["http://localhost:3000"];
+
     const userPoolClient = new cognito.UserPoolClient(this, 'TrainoraUserPoolClient', {
       userPool,
       generateSecret: false,
@@ -346,8 +372,8 @@ export class TrainoraInfraStack extends cdk.Stack {
           cognito.OAuthScope.EMAIL,
           cognito.OAuthScope.PROFILE,
         ],
-        callbackUrls: ['http://localhost:3000/api/auth/callback/cognito'],
-        logoutUrls: ['http://localhost:3000'],
+        callbackUrls: callbackUrls,
+        logoutUrls: logoutUrls,
       },
     });
 
