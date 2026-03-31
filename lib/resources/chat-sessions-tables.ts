@@ -37,7 +37,7 @@ export class TrainoraChatSessionsTable extends Construct {
       timeToLiveAttribute: "ttl",
     });
 
-    // GSI: list sessions ordered by updatedAt
+    // List sessions ordered by last update
     this.table.addGlobalSecondaryIndex({
       indexName: "byUserUpdatedAt",
       partitionKey: {
@@ -46,6 +46,16 @@ export class TrainoraChatSessionsTable extends Construct {
       },
       sortKey: {
         name: "updatedAt",
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // IMPORTANT: Fetch session by sessionId
+    this.table.addGlobalSecondaryIndex({
+      indexName: "bySessionId",
+      partitionKey: {
+        name: "sessionId",
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,

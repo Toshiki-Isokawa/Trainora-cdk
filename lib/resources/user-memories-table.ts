@@ -37,7 +37,6 @@ export class TrainoraUserMemoriesTable extends Construct {
       timeToLiveAttribute: "ttl",
     });
 
-    // Optional GSI: query memories by type
     this.table.addGlobalSecondaryIndex({
       indexName: "byUserMemoryType",
       partitionKey: {
@@ -45,7 +44,7 @@ export class TrainoraUserMemoriesTable extends Construct {
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: "type",
+        name: "memoryType",
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
