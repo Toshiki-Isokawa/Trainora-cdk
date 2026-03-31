@@ -25,6 +25,7 @@
     "@aws-sdk/lib-dynamodb": "^3.922.0",
     "@aws-sdk/s3-request-presigner": "^3.943.0",
     "aws-cdk-lib": "2.215.0",
-    "constructs": "^10.0.0"
+    "constructs": "^10.0.0",
+    "openai": "^6.22.0"
   }
 }

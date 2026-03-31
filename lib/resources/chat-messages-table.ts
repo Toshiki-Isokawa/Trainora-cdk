@@ -36,5 +36,18 @@ export class TrainoraChatMessagesTable extends Construct {
           : cdk.RemovalPolicy.DESTROY,
       timeToLiveAttribute: "ttl",
     });
+
+    this.table.addGlobalSecondaryIndex({
+      indexName: "byUserCreatedAt",
+      partitionKey: {
+        name: "userId",
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: "createdAt",
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
   }
 }
